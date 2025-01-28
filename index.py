@@ -1,59 +1,32 @@
-import pygame
-import sys
-from control import move_forward, move_backward, turn_left, turn_right
+from flask import Flask, jsonify
+from control import move_forward, move_backward, turn_left, turn_right, turn_stop
 
-# Initialize Pygame
-pygame.init()
+app = Flask(__name__)
 
-# Set up the display
-screen = pygame.display.set_mode((640, 480))
-pygame.display.set_caption("Key Press Detection")
+@app.route('/move/up', methods=['GET'])
+def move_up():
+    move_forward()
+    return jsonify({"status": "success", "message": "Moved forward"}), 200
 
-# Define key press durations
-SHORT_PRESS_DURATION = 500  # milliseconds
-LONG_PRESS_DURATION = 1000  # milliseconds
+@app.route('/move/down', methods=['GET'])
+def move_down():
+    move_backward()
+    return jsonify({"status": "success", "message": "Moved backward"}), 200
 
+@app.route('/move/left', methods=['GET'])
+def move_left():
+    turn_left()
+    return jsonify({"status": "success", "message": "Turned left"}), 200
 
-key_press_start_times = {}
+@app.route('/move/right', methods=['GET'])
+def move_right():
+    turn_right()
+    return jsonify({"status": "success", "message": "Turned right"}), 200
 
-keys = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]
+@app.route('/move/stop', methods=['GET'])
+def stop_movement():
+    turn_stop()
+    return jsonify({"status": "success", "message": "Stopped movement"}), 200
 
-
-def startRun(key: int):
-    if key == pygame.K_UP:
-        move_forward()
-    elif key == pygame.K_DOWN:
-        move_backward()
-    elif key == pygame.K_LEFT:
-        turn_left()
-    elif key == pygame.K_RIGHT:
-        turn_right()
-
-
-# Main loop
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            key_press_start_times[event.key] = pygame.time.get_ticks()
-            if event.key in keys:
-                startRun(event.key)
-        elif event.type == pygame.KEYUP:
-            press_duration = pygame.time.get_ticks() - key_press_start_times.get(
-                event.key, 0
-            )
-            print("KeyUp", event.key)
-            # if press_duration < SHORT_PRESS_DURATION:
-            #   print(f"Key {pygame.key.name(event.key)} was short pressed")
-            # elif press_duration >= LONG_PRESS_DURATION:
-            #   print(f"Key {pygame.key.name(event.key)} was long pressed")
-            key_press_start_times.pop(event.key, None)
-
-    # Update the display
-    pygame.display.flip()
-
-# Quit Pygame
-pygame.quit()
-sys.exit()
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
